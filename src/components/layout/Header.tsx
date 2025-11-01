@@ -18,6 +18,7 @@ const Header = () => {
         { name: 'Dashboard', href: '/patient/dashboard' },
         { name: 'Find Nurses', href: '/nurses' },
         { name: 'My Bookings', href: '/patient/bookings' },
+        { name: 'Messages', href: '/messages' },
         { name: 'Support', href: '/support' },
       ]
     }
@@ -29,6 +30,7 @@ const Header = () => {
         { name: 'Dashboard', href: '/nurse/dashboard' },
         { name: 'My Appointments', href: '/nurse/appointments' },
         { name: 'Availability', href: '/nurse/availability' },
+        { name: 'Messages', href: '/messages' },
         { name: 'Earnings', href: '/nurse/earnings' },
         { name: 'Support', href: '/support' },
       ]

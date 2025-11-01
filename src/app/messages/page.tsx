@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SocketProvider } from '@/contexts/SocketContext';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { VideoCallModal } from '@/components/video/VideoCallModal';
 import { IncomingCallNotification } from '@/components/video/IncomingCallNotification';
 import { useVideoCall } from '@/hooks/useVideoCall';
 
-function MessagesPageContent() {
+export default function MessagesPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
   const { currentCall, incomingCall, startCall, endCall, acceptCall, rejectCall } = useVideoCall(selectedConversationId);
 
@@ -75,13 +74,5 @@ function MessagesPageContent() {
         />
       )}
     </div>
-  );
-}
-
-export default function MessagesPage() {
-  return (
-    <SocketProvider>
-      <MessagesPageContent />
-    </SocketProvider>
   );
 }
