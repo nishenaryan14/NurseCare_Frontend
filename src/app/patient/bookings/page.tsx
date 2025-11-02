@@ -19,6 +19,7 @@ import {
 import { CheckCircleIcon as CheckCircleSolid, ClockIcon as ClockSolid } from '@heroicons/react/24/solid'
 import { formatDate, formatTime } from '@/lib/utils'
 import api from '@/lib/api'
+import { StartChatButton } from '@/components/chat/StartChatButton'
 
 export default function PatientBookings() {
   const { user } = useAuth()
@@ -301,6 +302,18 @@ export default function PatientBookings() {
                       <span className="text-sm font-medium text-gray-500">Cost</span>
                       <p className="mt-1 text-sm text-gray-900">₹{((selectedBooking.nurse?.nurseProfile?.hourlyRate || 0) * selectedBooking.durationMinutes / 60).toFixed(0)}</p>
                     </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    {selectedBooking.nurse && (
+                      <StartChatButton
+                        otherUserId={selectedBooking.nurse.id}
+                        otherUserName={selectedBooking.nurse.name || 'Nurse'}
+                        bookingId={selectedBooking.id}
+                        variant="primary"
+                      />
+                    )}
                   </div>
 
                   {/* Booking ID and Dates */}

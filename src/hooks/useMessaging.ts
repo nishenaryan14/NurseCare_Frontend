@@ -53,9 +53,13 @@ export const useMessaging = (conversationId?: number) => {
     try {
       setLoading(true);
       const response = await api.get(`/messaging/conversations/${convId}/messages`);
-      setMessages(response.data.reverse()); // Reverse to show oldest first
+      // Backend returns DESC order, reverse to show oldest first
+      const messagesData = Array.isArray(response.data) ? response.data.reverse() : [];
+      setMessages(messagesData);
+      console.log('Fetched messages:', messagesData.length);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      setMessages([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -90,15 +94,6 @@ export const useMessaging = (conversationId?: number) => {
     });
   }, [socket, conversationId]);
 
-  // Mark messages as read
-  const markAsRead = useCallback(async (convId: number) => {
-    try {
-      await api.post(`/messaging/conversations/${convId}/read`);
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-    }
-  }, []);
-
   // Fetch unread count
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -108,6 +103,22 @@ export const useMessaging = (conversationId?: number) => {
       console.error('Error fetching unread count:', error);
     }
   }, []);
+
+  // Mark messages as read
+  const markAsRead = useCallback(async (convId: number) => {
+    try {
+      await api.post(`/messaging/conversations/${convId}/read`);
+      
+      // Update local state to mark messages as read
+      setMessages(prev => prev.map(msg => ({ ...msg, read: true })));
+      
+      // Refresh conversations to update unread counts
+      fetchConversations();
+      fetchUnreadCount();
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  }, [fetchConversations, fetchUnreadCount]);
 
   // Send typing indicator
   const sendTyping = useCallback((isTyping: boolean) => {
@@ -147,8 +158,12 @@ export const useMessaging = (conversationId?: number) => {
     const handleNewMessage = (message: Message) => {
       if (conversationId && message.conversationId === conversationId) {
         setMessages((prev) => [...prev, message]);
+        // Don't fetch unread count here - let the component handle marking as read
+      } else {
+        // Only update unread count if message is for a different conversation
+        fetchUnreadCount();
+        fetchConversations(); // Refresh conversation list to show new message
       }
-      fetchUnreadCount();
     };
 
     const handleUserTyping = (data: { userId: number; isTyping: boolean }) => {
@@ -162,7 +177,7 @@ export const useMessaging = (conversationId?: number) => {
       socket.off('newMessage', handleNewMessage);
       socket.off('userTyping', handleUserTyping);
     };
-  }, [socket, conversationId, fetchUnreadCount]);
+  }, [socket, conversationId, fetchUnreadCount, fetchConversations]);
 
   // Fetch initial data
   useEffect(() => {
@@ -172,10 +187,13 @@ export const useMessaging = (conversationId?: number) => {
 
   useEffect(() => {
     if (conversationId) {
+      console.log('Loading conversation:', conversationId);
       fetchMessages(conversationId);
-      markAsRead(conversationId);
+      // Don't auto-mark as read here - let the component handle it when messages are visible
+    } else {
+      setMessages([]); // Clear messages when no conversation selected
     }
-  }, [conversationId, fetchMessages, markAsRead]);
+  }, [conversationId]); // Remove fetchMessages from deps to avoid circular dependency
 
   return {
     messages,
@@ -190,5 +208,6 @@ export const useMessaging = (conversationId?: number) => {
     fetchMessages,
     createConversation,
     markAsRead,
+    fetchUnreadCount,
   };
 };

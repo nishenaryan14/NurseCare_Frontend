@@ -1,14 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { VideoCallModal } from '@/components/video/VideoCallModal';
 import { IncomingCallNotification } from '@/components/video/IncomingCallNotification';
 import { useVideoCall } from '@/hooks/useVideoCall';
+import { useSocket } from '@/contexts/SocketContext';
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const { isConnected } = useSocket();
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
+
+  // Auto-select conversation from URL parameter
+  useEffect(() => {
+    const conversationId = searchParams.get('conversationId');
+    if (conversationId) {
+      console.log('Auto-selecting conversation from URL:', conversationId);
+      setSelectedConversationId(parseInt(conversationId));
+    }
+  }, [searchParams]);
   const { currentCall, incomingCall, startCall, endCall, acceptCall, rejectCall } = useVideoCall(selectedConversationId);
 
   const handleStartVideoCall = async () => {
@@ -27,25 +40,53 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="h-screen flex">
-      {/* Conversation List */}
-      <div className="w-1/3 border-r">
-        <ConversationList
-          onSelectConversation={setSelectedConversationId}
-          selectedConversationId={selectedConversationId}
-        />
-      </div>
+    <div className="fixed inset-0 flex flex-col bg-gray-100" style={{ top: '64px' }}>
+      {/* Connection Status */}
+      {!isConnected && (
+        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex-shrink-0 z-20">
+          ⚠️ Connecting to chat server...
+        </div>
+      )}
+      
+      <div className="flex-1 flex overflow-hidden bg-gray-100 p-2 md:p-3 gap-2 md:gap-3 min-h-0">
+        {/* Conversation List - Hidden on mobile when conversation is selected */}
+        <div className={`${
+          selectedConversationId ? 'hidden md:flex' : 'flex'
+        } w-full md:w-80 lg:w-96 flex-shrink-0 rounded-lg shadow-sm overflow-hidden`}>
+          <ConversationList
+            onSelectConversation={setSelectedConversationId}
+            selectedConversationId={selectedConversationId}
+          />
+        </div>
 
       {/* Message Thread */}
-      <div className="flex-1">
+      <div className={`${
+        selectedConversationId ? 'flex' : 'hidden md:flex'
+      } flex-1 overflow-hidden bg-white rounded-lg shadow-sm`}>
         {selectedConversationId ? (
-          <MessageThread
-            conversationId={selectedConversationId}
-            onStartVideoCall={handleStartVideoCall}
-          />
+          <div className="w-full h-full flex flex-col overflow-hidden">
+            {/* Mobile back button */}
+            <div className="md:hidden flex items-center gap-2 p-3 border-b bg-white flex-shrink-0 z-10">
+              <button
+                onClick={() => setSelectedConversationId(undefined)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="font-semibold text-gray-900">Back to conversations</span>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <MessageThread
+                conversationId={selectedConversationId}
+                onStartVideoCall={handleStartVideoCall}
+              />
+            </div>
+          </div>
         ) : (
-          <div className="flex items-center justify-center h-full bg-gray-50">
-            <div className="text-center text-gray-500">
+          <div className="flex items-center justify-center h-full bg-gray-50 w-full">
+            <div className="text-center text-gray-500 px-4">
               <svg className="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
@@ -73,6 +114,7 @@ export default function MessagesPage() {
           onReject={rejectCall}
         />
       )}
+      </div>
     </div>
   );
 }

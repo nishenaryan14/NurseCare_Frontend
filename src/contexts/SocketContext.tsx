@@ -21,6 +21,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    console.log('🔌 Connecting to Socket.io at:', socketUrl);
+    console.log('📝 Environment API URL:', process.env.NEXT_PUBLIC_API_URL);
     
     const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
@@ -30,13 +32,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id);
+      console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
 
       // Register user with socket
       const userId = localStorage.getItem('userId');
       if (userId) {
+        console.log('📝 Registering user:', userId);
         newSocket.emit('register', { userId: parseInt(userId) });
+      } else {
+        console.warn('⚠️ No userId found in localStorage');
       }
     });
 

@@ -35,6 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           }
+          
+          // Store userId for messaging system
+          localStorage.setItem('userId', payload.sub.toString())
+          
           setUser(userData)
           setLoading(false)
         } catch (error) {
@@ -70,6 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
+      
+      // Store userId for messaging system
+      localStorage.setItem('userId', payload.sub.toString())
+      
       setUser(userData)
       
       toast.success('Login successful!')
@@ -95,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('userId')
     setUser(null)
     toast.success('Logged out successfully')
     

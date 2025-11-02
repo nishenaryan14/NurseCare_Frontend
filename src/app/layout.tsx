@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
+import { NotificationProvider } from '@/components/NotificationProvider'
 import { Toaster } from 'react-hot-toast'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -24,11 +25,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <SocketProvider>
-            <Header />
-            <main>
-              {children}
-            </main>
-            <Footer />
+            <NotificationProvider>
+              <Header />
+              <main>
+                {children}
+              </main>
+              <Footer />
             <Toaster
               position="top-right"
               toastOptions={{
@@ -53,6 +55,7 @@ export default function RootLayout({
                 },
               }}
             />
+            </NotificationProvider>
           </SocketProvider>
         </AuthProvider>
       </body>

@@ -1,14 +1,47 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import Button from '@/components/ui/Button'
 import { Bars3Icon, XMarkIcon, UserCircleIcon } from '@heroicons/react/24/outline'
+import { useSocket } from '@/contexts/SocketContext'
+import api from '@/lib/api'
 const Header = () => {
   const { user, logout } = useAuth()
+  const { socket } = useSocket()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread count
+  useEffect(() => {
+    if (!user) return
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await api.get('/messaging/unread-count')
+        setUnreadCount(response.data.count)
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Listen for new messages to update count
+    if (socket) {
+      socket.on('newMessage', () => {
+        fetchUnreadCount()
+      })
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('newMessage')
+      }
+    }
+  }, [user, socket])
 
   const getNavigation = () => {
     // Navigation for Patients
@@ -73,9 +106,14 @@ const Header = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 relative"
               >
                 {item.name}
+                {item.name === 'Messages' && unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
