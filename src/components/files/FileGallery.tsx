@@ -8,6 +8,7 @@ interface FileItem {
   filename: string;
   mimetype: string;
   size: number;
+  url: string;
   uploadedBy: {
     id: number;
     name: string;
@@ -204,7 +205,7 @@ export const FileGallery: React.FC<FileGalleryProps> = ({
                 >
                   {isImage(file.mimetype) ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}/files/${file.id}/download`}
+                      src={file.url}
                       alt={file.filename}
                       className="w-full h-full object-cover rounded-lg"
                     />

@@ -8,6 +8,7 @@ interface FileItem {
   filename: string;
   mimetype: string;
   size: number;
+  url: string;
   uploadedBy: {
     id: number;
     name: string;
@@ -145,14 +146,14 @@ export const FileLightbox: React.FC<FileLightboxProps> = ({
         <div className="flex-1 flex items-center justify-center w-full max-w-6xl">
           {isImage ? (
             <img
-              src={`${process.env.NEXT_PUBLIC_API_URL}/files/${file.id}/download`}
+              src={file.url}
               alt={file.filename}
               className="max-w-full max-h-full object-contain transition-transform duration-200"
               style={{ transform: `scale(${zoom})` }}
             />
           ) : isPDF ? (
             <iframe
-              src={`${process.env.NEXT_PUBLIC_API_URL}/files/${file.id}/download`}
+              src={file.url}
               className="w-full h-full bg-white rounded-lg"
               title={file.filename}
             />
