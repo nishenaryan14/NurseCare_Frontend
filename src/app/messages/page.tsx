@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
@@ -9,7 +9,7 @@ import { IncomingCallNotification } from '@/components/video/IncomingCallNotific
 import { useVideoCall } from '@/hooks/useVideoCall';
 import { useSocket } from '@/contexts/SocketContext';
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const searchParams = useSearchParams();
   const { isConnected } = useSocket();
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
@@ -116,5 +116,20 @@ export default function MessagesPage() {
       )}
       </div>
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-100" style={{ top: '64px' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading messages...</p>
+        </div>
+      </div>
+    }>
+      <MessagesPageContent />
+    </Suspense>
   );
 }
