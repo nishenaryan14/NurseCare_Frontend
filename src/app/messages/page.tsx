@@ -13,6 +13,7 @@ function MessagesPageContent() {
   const searchParams = useSearchParams();
   const { isConnected } = useSocket();
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
+  const [selectedRecipient, setSelectedRecipient] = useState<{ name: string; role: string } | undefined>();
 
   // Auto-select conversation from URL parameter
   useEffect(() => {
@@ -23,6 +24,13 @@ function MessagesPageContent() {
     }
   }, [searchParams]);
   const { currentCall, incomingCall, startCall, endCall, acceptCall, rejectCall } = useVideoCall(selectedConversationId);
+
+  const handleSelectConversation = (conversationId: number, recipientName?: string, recipientRole?: string) => {
+    setSelectedConversationId(conversationId);
+    if (recipientName && recipientRole) {
+      setSelectedRecipient({ name: recipientName, role: recipientRole });
+    }
+  };
 
   const handleStartVideoCall = async () => {
     try {
@@ -54,7 +62,7 @@ function MessagesPageContent() {
           selectedConversationId ? 'hidden md:flex' : 'flex'
         } w-full md:w-80 lg:w-96 flex-shrink-0 rounded-lg shadow-sm overflow-hidden`}>
           <ConversationList
-            onSelectConversation={setSelectedConversationId}
+            onSelectConversation={handleSelectConversation}
             selectedConversationId={selectedConversationId}
           />
         </div>
@@ -81,6 +89,8 @@ function MessagesPageContent() {
               <MessageThread
                 conversationId={selectedConversationId}
                 onStartVideoCall={handleStartVideoCall}
+                recipientName={selectedRecipient?.name}
+                recipientRole={selectedRecipient?.role}
               />
             </div>
           </div>

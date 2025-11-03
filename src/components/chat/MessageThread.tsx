@@ -2,23 +2,30 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useMessaging } from '@/hooks/useMessaging';
+import EmojiPicker from '@/components/chat/EmojiPicker';
 
 interface MessageThreadProps {
   conversationId: number;
   onStartVideoCall: () => void;
+  recipientName?: string;
+  recipientRole?: string;
 }
 
 export const MessageThread: React.FC<MessageThreadProps> = ({
   conversationId,
   onStartVideoCall,
+  recipientName,
+  recipientRole,
 }) => {
   const { messages, isTyping, sendMessage, sendTyping, loading, markAsRead, fetchUnreadCount } = useMessaging(conversationId);
   const [messageInput, setMessageInput] = useState('');
   const [isUserTyping, setIsUserTyping] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [hasMarkedAsRead, setHasMarkedAsRead] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = parseInt(localStorage.getItem('userId') || '0');
 
@@ -89,6 +96,34 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     }, 2000);
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    setMessageInput(prev => prev + emoji);
+    setShowEmojiPicker(false);
+    
+    // Trigger typing indicator
+    if (!isUserTyping) {
+      setIsUserTyping(true);
+      sendTyping(true);
+    }
+  };
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -100,28 +135,34 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden w-full">
       {/* Header */}
-      <div className="p-3 md:p-4 border-b bg-white shadow-sm flex-shrink-0 z-10 w-full">
+      <div className="p-3 md:p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 shadow-md flex-shrink-0 z-10 w-full">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+          <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-md ${
+              recipientRole === 'NURSE' 
+                ? 'bg-gradient-to-br from-green-400 to-green-600' 
+                : 'bg-gradient-to-br from-purple-400 to-purple-600'
+            }`}>
+              {recipientName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
-            <div>
-              <h3 className="font-semibold text-base md:text-lg text-gray-900">Chat</h3>
-              <p className="text-xs text-gray-500 hidden md:block">Active now</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-base md:text-lg text-white truncate">
+                {recipientName || 'Chat'}
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <p className="text-xs text-blue-100">Active now</p>
+              </div>
             </div>
           </div>
           <button
             onClick={onStartVideoCall}
-            className="px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-1 md:gap-2 shadow-md hover:shadow-lg text-sm md:text-base"
+            className="px-3 py-2 md:px-4 md:py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 flex items-center gap-1 md:gap-2 shadow-md hover:shadow-lg text-sm md:text-base border border-white/30"
           >
-            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             <span className="font-medium hidden sm:inline">Video Call</span>
-            <span className="font-medium sm:hidden">Call</span>
           </button>
         </div>
       </div>
@@ -224,13 +265,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       {/* Input */}
       <form onSubmit={handleSendMessage} className="p-3 md:p-4 border-t bg-white flex-shrink-0 z-10 w-full">
         <div className="flex items-end gap-2 md:gap-3 w-full max-w-full">
-          <div className="flex-1 relative">
+          <div className="flex-1 relative" ref={emojiPickerRef}>
             <input
               type="text"
               value={messageInput}
               onChange={handleInputChange}
               placeholder="Type a message..."
-              className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 md:pr-12 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors text-sm md:text-base"
+              className="w-full px-3 md:px-4 py-2 md:py-3 pr-12 md:pr-14 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors text-sm md:text-base"
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -240,12 +281,20 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
             />
             <button
               type="button"
-              className="absolute right-2 md:right-3 bottom-2 md:bottom-3 text-gray-400 hover:text-gray-600 transition-colors hidden sm:block"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="absolute right-2 md:right-3 bottom-2 md:bottom-3 text-gray-400 hover:text-yellow-500 transition-colors"
             >
-              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </button>
+            
+            {/* Emoji Picker */}
+            {showEmojiPicker && (
+              <div className="absolute bottom-full right-0 mb-2">
+                <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+              </div>
+            )}
           </div>
           <button
             type="submit"
