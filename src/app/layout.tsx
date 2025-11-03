@@ -5,8 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { NotificationProvider } from '@/components/NotificationProvider'
 import { Toaster } from 'react-hot-toast'
-import Header from '@/components/layout/Header'
-import Footer from '@/components/layout/Footer'
+import ConditionalLayout from '@/components/layout/ConditionalLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,18 +25,16 @@ export default function RootLayout({
         <AuthProvider>
           <SocketProvider>
             <NotificationProvider>
-              <Header />
-              <main>
+              <ConditionalLayout>
                 {children}
-              </main>
-              <Footer />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
+              </ConditionalLayout>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
                 },
                 success: {
                   duration: 3000,
