@@ -9,6 +9,7 @@ interface MessageThreadProps {
   onStartVideoCall: () => void;
   recipientName?: string;
   recipientRole?: string;
+  onBack?: () => void;
 }
 
 export const MessageThread: React.FC<MessageThreadProps> = ({
@@ -16,6 +17,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   onStartVideoCall,
   recipientName,
   recipientRole,
+  onBack,
 }) => {
   const { messages, isTyping, sendMessage, sendTyping, loading, markAsRead, fetchUnreadCount } = useMessaging(conversationId);
   const [messageInput, setMessageInput] = useState('');
@@ -136,15 +138,31 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     <div className="flex flex-col h-full bg-white overflow-hidden w-full">
       {/* Header */}
       <div className="p-3 md:p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 shadow-md flex-shrink-0 z-10 w-full">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-md ${
+            {/* Back button - only on mobile */}
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="md:hidden flex-shrink-0 p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                aria-label="Back to conversations"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            
+            {/* Avatar */}
+            <div className={`w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center text-white font-semibold shadow-md ${
               recipientRole === 'NURSE' 
                 ? 'bg-gradient-to-br from-green-400 to-green-600' 
                 : 'bg-gradient-to-br from-purple-400 to-purple-600'
             }`}>
               {recipientName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
+            
+            {/* Name and status */}
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-base md:text-lg text-white truncate">
                 {recipientName || 'Chat'}

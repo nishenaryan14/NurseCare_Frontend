@@ -72,28 +72,13 @@ function MessagesPageContent() {
         selectedConversationId ? 'flex' : 'hidden md:flex'
       } flex-1 overflow-hidden bg-white rounded-lg shadow-sm`}>
         {selectedConversationId ? (
-          <div className="w-full h-full flex flex-col overflow-hidden">
-            {/* Mobile back button */}
-            <div className="md:hidden flex items-center gap-2 p-3 border-b bg-white flex-shrink-0 z-10">
-              <button
-                onClick={() => setSelectedConversationId(undefined)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <span className="font-semibold text-gray-900">Back to conversations</span>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <MessageThread
-                conversationId={selectedConversationId}
-                onStartVideoCall={handleStartVideoCall}
-                recipientName={selectedRecipient?.name}
-                recipientRole={selectedRecipient?.role}
-              />
-            </div>
-          </div>
+          <MessageThread
+            conversationId={selectedConversationId}
+            onStartVideoCall={handleStartVideoCall}
+            recipientName={selectedRecipient?.name}
+            recipientRole={selectedRecipient?.role}
+            onBack={() => setSelectedConversationId(undefined)}
+          />
         ) : (
           <div className="flex items-center justify-center h-full bg-gray-50 w-full">
             <div className="text-center text-gray-500 px-4">
