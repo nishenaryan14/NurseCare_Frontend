@@ -85,10 +85,19 @@ export default function NursesPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-full text-sm font-medium mb-6"
+          >
+            <HeartIcon className="w-4 h-4 mr-2" />
+            Verified Healthcare Professionals
+          </motion.div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
             Find Qualified Nurses
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Connect with professional, licensed nurses for personalized home healthcare services
           </p>
         </motion.div>
@@ -98,8 +107,12 @@ export default function NursesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-white rounded-xl p-6 shadow-sm mb-8"
+          className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 mb-8"
         >
+          <div className="flex items-center gap-2 mb-4">
+            <FunnelIcon className="h-5 w-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Filter & Search</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -160,54 +173,76 @@ export default function NursesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow"
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 group relative overflow-hidden"
               >
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                <div className="relative z-10">
                 <div className="text-center mb-4">
-                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <HeartIcon className="h-10 w-10 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:shadow-xl transition-shadow"
+                  >
+                    <HeartIcon className="h-12 w-12 text-blue-600" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">
                     {nurse.user?.name || 'Nurse'}
                   </h3>
-                  <p className="text-sm text-gray-600">{nurse.user?.email || 'Not available'}</p>
+                  <p className="text-sm text-gray-500">{nurse.user?.email || 'Not available'}</p>
                 </div>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-2">
-                    <MapPinIcon className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">{nurse.location || '—'}</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-gray-50 group-hover:bg-white transition-colors">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <MapPinIcon className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{nurse.location || '—'}</span>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
-                    <ClockIcon className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-gray-50 group-hover:bg-white transition-colors">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <ClockIcon className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="text-sm font-bold text-gray-900">
                       {typeof nurse.hourlyRate === 'number' ? formatCurrency(nurse.hourlyRate) + '/hour' : '—'}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <StarIcon className="h-4 w-4 text-yellow-400" />
-                    <span className="text-sm text-gray-600">4.8 (127 reviews)</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-gray-50 group-hover:bg-white transition-colors">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon key={i} className={`h-4 w-4 ${i < 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">4.8 (127)</span>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Specializations</h4>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Specializations</h4>
                   <div className="flex flex-wrap gap-2">
                     {(nurse.specialization || []).map((spec, i) => (
-                      <span
+                      <motion.span
                         key={i}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        whileHover={{ scale: 1.05 }}
+                        className="px-3 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 text-xs font-medium rounded-full border border-blue-200"
                       >
                         {spec}
-                      </span>
+                      </motion.span>
                     ))}
                   </div>
                 </div>
 
-                <Button className="w-full" onClick={() => handleBookClick(nurse)}>
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group-hover:shadow-xl" 
+                  onClick={() => handleBookClick(nurse)}
+                >
+                  <HeartIcon className="h-5 w-5 mr-2" />
                   Book Appointment
                 </Button>
+                </div>
               </motion.div>
             ))
           ) : (
@@ -224,25 +259,37 @@ export default function NursesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 bg-white rounded-xl p-8 shadow-sm"
+          className="mt-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 shadow-lg border border-blue-100"
         >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
-              <div className="text-gray-600">Qualified Nurses</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">50+</div>
-              <div className="text-gray-600">Cities Covered</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">10,000+</div>
-              <div className="text-gray-600">Happy Patients</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">4.9/5</div>
-              <div className="text-gray-600">Average Rating</div>
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="p-4 bg-white rounded-xl shadow-md"
+            >
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">500+</div>
+              <div className="text-gray-700 font-medium">Qualified Nurses</div>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="p-4 bg-white rounded-xl shadow-md"
+            >
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">50+</div>
+              <div className="text-gray-700 font-medium">Cities Covered</div>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="p-4 bg-white rounded-xl shadow-md"
+            >
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">10,000+</div>
+              <div className="text-gray-700 font-medium">Happy Patients</div>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="p-4 bg-white rounded-xl shadow-md"
+            >
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">4.9/5</div>
+              <div className="text-gray-700 font-medium">Average Rating</div>
+            </motion.div>
           </div>
         </motion.div>
       </div>

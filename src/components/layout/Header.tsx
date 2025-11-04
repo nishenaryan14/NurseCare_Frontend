@@ -95,18 +95,19 @@ const Header = () => {
   // The AuthContext and main page handle redirections properly
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex w-full items-center justify-between py-4">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 group">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg group-hover:shadow-xl transition-shadow"
               >
-                <span className="text-white font-bold text-lg">N</span>
+                <span className="text-white font-bold text-xl">N</span>
               </motion.div>
-              <span className="text-xl font-bold text-gray-900">NurseCare</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">NurseCare</span>
             </Link>
           </div>
 
@@ -116,13 +117,20 @@ const Header = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 relative"
+                className="text-gray-700 hover:text-blue-600 transition-all duration-200 relative font-medium px-3 py-2 rounded-lg hover:bg-blue-50 group"
               >
-                {item.name}
+                <span className="relative">
+                  {item.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+                </span>
                 {item.name === 'Messages' && unreadCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg"
+                  >
                     {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
+                  </motion.span>
                 )}
               </Link>
             ))}
@@ -138,10 +146,13 @@ const Header = () => {
                     user.role === 'NURSE' ? '/nurse/dashboard' : 
                     '/patient/dashboard'
                   }
-                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 hover:from-blue-100 hover:to-purple-100 transition-all duration-200 group"
                 >
-                  <UserCircleIcon className="h-6 w-6" />
-                  <span>{user.name || user.email}</span>
+                  <div className="relative">
+                    <UserCircleIcon className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                  </div>
+                  <span className="font-medium">{user.name || user.email}</span>
                 </Link>
                 <Button variant="outline" onClick={logout}>
                   Logout
@@ -150,10 +161,10 @@ const Header = () => {
             ) : (
               <div className="flex items-center space-x-4">
                 <Link href="/auth/login">
-                  <Button variant="ghost">Login</Button>
+                  <Button variant="ghost" className="hover:bg-blue-50">Login</Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button>Get Started</Button>
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl">Get Started</Button>
                 </Link>
               </div>
             )}
