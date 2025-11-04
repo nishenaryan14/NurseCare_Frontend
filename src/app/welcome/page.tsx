@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Button from '@/components/ui/Button'
+import PageLoader from '@/components/ui/PageLoader'
 import { 
   HeartIcon, 
   ClockIcon, 
@@ -119,6 +120,21 @@ const howItWorks = [
 ]
 
 export default function WelcomePage() {
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate initial content load
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (isLoading) {
+    return <PageLoader />
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
