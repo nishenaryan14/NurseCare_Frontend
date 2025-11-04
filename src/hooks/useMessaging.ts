@@ -27,6 +27,12 @@ interface Conversation {
   updatedAt: string;
 }
 
+interface UserStatus {
+  userId: number;
+  isOnline: boolean;
+  lastSeen: Date;
+}
+
 export const useMessaging = (conversationId?: number) => {
   const { socket, isConnected } = useSocket();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,6 +40,7 @@ export const useMessaging = (conversationId?: number) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userStatuses, setUserStatuses] = useState<Map<number, UserStatus>>(new Map());
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -151,7 +158,7 @@ export const useMessaging = (conversationId?: number) => {
     };
   }, [socket, conversationId]);
 
-  // Listen for new messages
+  // Listen for new messages and status changes
   useEffect(() => {
     if (!socket) return;
 
@@ -170,12 +177,38 @@ export const useMessaging = (conversationId?: number) => {
       setIsTyping(data.isTyping);
     };
 
+    const handleStatusChange = (data: { userId: number; isOnline: boolean; lastSeen: Date }) => {
+      setUserStatuses(prev => {
+        const updated = new Map(prev);
+        updated.set(data.userId, {
+          userId: data.userId,
+          isOnline: data.isOnline,
+          lastSeen: new Date(data.lastSeen),
+        });
+        return updated;
+      });
+    };
+
+    const handleMessagesRead = (data: { conversationId: number; readBy: number; timestamp: Date }) => {
+      if (conversationId && data.conversationId === conversationId) {
+        // Update messages to show as read
+        setMessages(prev => prev.map(msg => ({
+          ...msg,
+          read: true,
+        })));
+      }
+    };
+
     socket.on('newMessage', handleNewMessage);
     socket.on('userTyping', handleUserTyping);
+    socket.on('userStatusChanged', handleStatusChange);
+    socket.on('messagesRead', handleMessagesRead);
 
     return () => {
       socket.off('newMessage', handleNewMessage);
       socket.off('userTyping', handleUserTyping);
+      socket.off('userStatusChanged', handleStatusChange);
+      socket.off('messagesRead', handleMessagesRead);
     };
   }, [socket, conversationId, fetchUnreadCount, fetchConversations]);
 
@@ -195,6 +228,21 @@ export const useMessaging = (conversationId?: number) => {
     }
   }, [conversationId]); // Remove fetchMessages from deps to avoid circular dependency
 
+  // Heartbeat to update activity
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    // Send heartbeat every 30 seconds
+    const interval = setInterval(() => {
+      socket.emit('heartbeat', { userId: parseInt(userId) });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [socket, isConnected]);
+
   return {
     messages,
     conversations,
@@ -202,6 +250,7 @@ export const useMessaging = (conversationId?: number) => {
     isTyping,
     loading,
     isConnected,
+    userStatuses,
     sendMessage,
     sendTyping,
     fetchConversations,

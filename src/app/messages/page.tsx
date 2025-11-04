@@ -13,7 +13,7 @@ function MessagesPageContent() {
   const searchParams = useSearchParams();
   const { isConnected } = useSocket();
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
-  const [selectedRecipient, setSelectedRecipient] = useState<{ name: string; role: string } | undefined>();
+  const [selectedRecipient, setSelectedRecipient] = useState<{ name: string; role: string; id: number } | undefined>();
 
   // Auto-select conversation from URL parameter
   useEffect(() => {
@@ -25,10 +25,10 @@ function MessagesPageContent() {
   }, [searchParams]);
   const { currentCall, incomingCall, startCall, endCall, acceptCall, rejectCall } = useVideoCall(selectedConversationId);
 
-  const handleSelectConversation = (conversationId: number, recipientName?: string, recipientRole?: string) => {
+  const handleSelectConversation = (conversationId: number, recipientName?: string, recipientRole?: string, recipientId?: number) => {
     setSelectedConversationId(conversationId);
-    if (recipientName && recipientRole) {
-      setSelectedRecipient({ name: recipientName, role: recipientRole });
+    if (recipientName && recipientRole && recipientId) {
+      setSelectedRecipient({ name: recipientName, role: recipientRole, id: recipientId });
     }
   };
 
@@ -77,6 +77,7 @@ function MessagesPageContent() {
             onStartVideoCall={handleStartVideoCall}
             recipientName={selectedRecipient?.name}
             recipientRole={selectedRecipient?.role}
+            recipientId={selectedRecipient?.id}
             onBack={() => setSelectedConversationId(undefined)}
           />
         ) : (

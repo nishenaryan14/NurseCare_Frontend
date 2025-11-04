@@ -12,6 +12,7 @@ interface MessageThreadProps {
   onStartVideoCall: () => void;
   recipientName?: string;
   recipientRole?: string;
+  recipientId?: number;
   onBack?: () => void;
 }
 
@@ -20,9 +21,10 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   onStartVideoCall,
   recipientName,
   recipientRole,
+  recipientId,
   onBack,
 }) => {
-  const { messages, isTyping, sendMessage, sendTyping, loading, markAsRead, fetchUnreadCount } = useMessaging(conversationId);
+  const { messages, isTyping, sendMessage, sendTyping, loading, markAsRead, fetchUnreadCount, userStatuses } = useMessaging(conversationId);
   const [messageInput, setMessageInput] = useState('');
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -36,6 +38,26 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = parseInt(localStorage.getItem('userId') || '0');
+
+  // Get recipient status
+  const recipientStatus = recipientId ? userStatuses.get(recipientId) : null;
+
+  // Helper function to format last seen
+  const formatLastSeen = (lastSeen: Date | null) => {
+    if (!lastSeen) return 'Offline';
+    
+    const now = new Date();
+    const diff = now.getTime() - new Date(lastSeen).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return new Date(lastSeen).toLocaleDateString();
+  };
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -174,8 +196,17 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 {recipientName || 'Chat'}
               </h3>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <p className="text-xs text-blue-100">Active now</p>
+                <div className={`w-2 h-2 rounded-full ${
+                  recipientStatus?.isOnline 
+                    ? 'bg-green-400 animate-pulse' 
+                    : 'bg-gray-400'
+                }`}></div>
+                <p className="text-xs text-blue-100">
+                  {recipientStatus?.isOnline 
+                    ? 'Active now' 
+                    : formatLastSeen(recipientStatus?.lastSeen || null)
+                  }
+                </p>
               </div>
             </div>
           </div>

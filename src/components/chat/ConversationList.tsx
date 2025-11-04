@@ -5,7 +5,7 @@ import { useMessaging } from '@/hooks/useMessaging';
 import { ConversationListSkeleton } from './LoadingSkeleton';
 
 interface ConversationListProps {
-  onSelectConversation: (conversationId: number, recipientName?: string, recipientRole?: string) => void;
+  onSelectConversation: (conversationId: number, recipientName?: string, recipientRole?: string, recipientId?: number) => void;
   selectedConversationId?: number;
 }
 
@@ -104,7 +104,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           return (
             <div
               key={conversation.id}
-              onClick={() => onSelectConversation(conversation.id, otherUser?.name, otherUser?.role)}
+              onClick={() => onSelectConversation(conversation.id, otherUser?.name, otherUser?.role, otherUser?.id)}
               className={`p-3 md:p-4 border-b cursor-pointer transition-all duration-200 ${
                 isSelected 
                   ? 'bg-blue-50 border-l-4 border-l-blue-500 shadow-sm' 
