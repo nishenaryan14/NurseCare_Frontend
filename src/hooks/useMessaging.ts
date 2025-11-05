@@ -48,12 +48,31 @@ export const useMessaging = (conversationId?: number) => {
       setLoading(true);
       const response = await api.get('/messaging/conversations');
       setConversations(response.data);
+      
+      // Fetch status for all participants after loading conversations
+      if (socket && response.data.length > 0) {
+        const currentUserId = parseInt(localStorage.getItem('userId') || '0');
+        const allParticipantIds = new Set<number>();
+        
+        response.data.forEach((conv: any) => {
+          conv.participants?.forEach((p: any) => {
+            if (p.userId !== currentUserId) {
+              allParticipantIds.add(p.userId);
+            }
+          });
+        });
+        
+        if (allParticipantIds.size > 0) {
+          console.log('Fetching status for participants:', Array.from(allParticipantIds));
+          socket.emit('getOnlineStatus', { userIds: Array.from(allParticipantIds) });
+        }
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [socket]);
 
   // Fetch messages for a conversation
   const fetchMessages = useCallback(async (convId: number) => {
@@ -178,6 +197,7 @@ export const useMessaging = (conversationId?: number) => {
     };
 
     const handleStatusChange = (data: { userId: number; isOnline: boolean; lastSeen: Date }) => {
+      console.log('Status changed:', data);
       setUserStatuses(prev => {
         const updated = new Map(prev);
         updated.set(data.userId, {
@@ -199,16 +219,40 @@ export const useMessaging = (conversationId?: number) => {
       }
     };
 
+    // Global handler for online statuses (from fetchConversations)
+    const handleOnlineStatuses = (data: Array<{ id: number; isOnline: boolean; lastSeen: Date }> | any) => {
+      console.log('Received online statuses (global):', data);
+      
+      // Handle both formats: direct array or wrapped in data property
+      const statuses = Array.isArray(data) ? data : (data?.data || []);
+      
+      statuses.forEach((user: any) => {
+        if (user && user.id) {
+          setUserStatuses(prev => {
+            const updated = new Map(prev);
+            updated.set(user.id, {
+              userId: user.id,
+              isOnline: user.isOnline || false,
+              lastSeen: new Date(user.lastSeen),
+            });
+            return updated;
+          });
+        }
+      });
+    };
+
     socket.on('newMessage', handleNewMessage);
     socket.on('userTyping', handleUserTyping);
     socket.on('userStatusChanged', handleStatusChange);
     socket.on('messagesRead', handleMessagesRead);
+    socket.on('onlineStatuses', handleOnlineStatuses);
 
     return () => {
       socket.off('newMessage', handleNewMessage);
       socket.off('userTyping', handleUserTyping);
       socket.off('userStatusChanged', handleStatusChange);
       socket.off('messagesRead', handleMessagesRead);
+      socket.off('onlineStatuses', handleOnlineStatuses);
     };
   }, [socket, conversationId, fetchUnreadCount, fetchConversations]);
 
@@ -244,22 +288,25 @@ export const useMessaging = (conversationId?: number) => {
       socket.emit('getOnlineStatus', { userIds: otherParticipants });
       
       // Listen for response
-      const handleOnlineStatuses = (data: { data: Array<{ id: number; isOnline: boolean; lastSeen: Date }> }) => {
-        if (data.data) {
-          data.data.forEach(user => {
-            if (user) {
-              setUserStatuses(prev => {
-                const updated = new Map(prev);
-                updated.set(user.id, {
-                  userId: user.id,
-                  isOnline: user.isOnline,
-                  lastSeen: new Date(user.lastSeen),
-                });
-                return updated;
+      const handleOnlineStatuses = (data: Array<{ id: number; isOnline: boolean; lastSeen: Date }> | any) => {
+        console.log('Received online statuses:', data);
+        
+        // Handle both formats: direct array or wrapped in data property
+        const statuses = Array.isArray(data) ? data : (data?.data || []);
+        
+        statuses.forEach((user: any) => {
+          if (user && user.id) {
+            setUserStatuses(prev => {
+              const updated = new Map(prev);
+              updated.set(user.id, {
+                userId: user.id,
+                isOnline: user.isOnline || false,
+                lastSeen: new Date(user.lastSeen),
               });
-            }
-          });
-        }
+              return updated;
+            });
+          }
+        });
       };
 
       socket.on('onlineStatuses', handleOnlineStatuses);
