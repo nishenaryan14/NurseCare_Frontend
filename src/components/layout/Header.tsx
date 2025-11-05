@@ -97,27 +97,27 @@ const Header = () => {
   return (
     <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
-        <div className="flex w-full items-center justify-between py-4">
-          <div className="flex items-center">
+        <div className="flex w-full items-center justify-between py-3">
+          <div className="flex items-center flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2 group">
               <motion.div
-                whileHover={{ scale: 1.05, rotate: 5 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg group-hover:shadow-xl transition-shadow"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 shadow-md group-hover:shadow-lg transition-shadow"
               >
-                <span className="text-white font-bold text-xl">N</span>
+                <span className="text-white font-bold text-lg">N</span>
               </motion.div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">NurseCare</span>
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">NurseCare</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-8">
+          <div className="hidden lg:flex lg:items-center lg:space-x-1 xl:space-x-4 flex-1 justify-center mx-4">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition-all duration-200 relative font-medium px-3 py-2 rounded-lg hover:bg-blue-50 group"
+                className="text-gray-700 hover:text-blue-600 transition-all duration-200 relative font-medium px-2 xl:px-3 py-2 rounded-lg hover:bg-blue-50 group text-sm xl:text-base whitespace-nowrap"
               >
                 <span className="relative">
                   {item.name}
@@ -137,44 +137,44 @@ const Header = () => {
           </div>
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex md:items-center md:space-x-4">
+          <div className="hidden lg:flex lg:items-center lg:space-x-2 xl:space-x-3 flex-shrink-0">
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 xl:space-x-3">
                 <Link
                   href={
                     user.role === 'ADMIN' ? '/admin' :
                     user.role === 'NURSE' ? '/nurse/dashboard' : 
                     '/patient/dashboard'
                   }
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 hover:from-blue-100 hover:to-purple-100 transition-all duration-200 group"
+                  className="flex items-center space-x-1 xl:space-x-2 px-2 xl:px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 hover:from-blue-100 hover:to-purple-100 transition-all duration-200 group"
                 >
                   <div className="relative">
-                    <UserCircleIcon className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                    <UserCircleIcon className="h-5 w-5 xl:h-6 xl:w-6 text-blue-600 group-hover:scale-110 transition-transform" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                   </div>
-                  <span className="font-medium">{user.name || user.email}</span>
+                  <span className="font-medium text-sm xl:text-base max-w-[100px] xl:max-w-none truncate">{user.name || user.email}</span>
                 </Link>
-                <Button variant="outline" onClick={logout}>
+                <Button variant="outline" onClick={logout} className="text-sm xl:text-base px-3 xl:px-4">
                   Logout
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 xl:space-x-3">
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="hover:bg-blue-50">Login</Button>
+                  <Button variant="ghost" className="hover:bg-blue-50 text-sm xl:text-base">Login</Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl">Get Started</Button>
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl text-sm xl:text-base">Get Started</Button>
                 </Link>
               </div>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               type="button"
-              className="text-gray-700 hover:text-blue-600"
+              className="text-gray-700 hover:text-blue-600 p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -192,7 +192,7 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-gray-200 py-4"
+            className="lg:hidden border-t border-gray-200 py-4"
           >
             <div className="space-y-4">
               {navigation.map((item) => (

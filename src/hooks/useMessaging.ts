@@ -228,6 +228,48 @@ export const useMessaging = (conversationId?: number) => {
     }
   }, [conversationId]); // Remove fetchMessages from deps to avoid circular dependency
 
+  // Fetch initial status for conversation participants
+  useEffect(() => {
+    if (!socket || !conversationId || !conversations.length) return;
+
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (!conversation) return;
+
+    const currentUserId = parseInt(localStorage.getItem('userId') || '0');
+    const otherParticipants = conversation.participants
+      .filter((p: any) => p.userId !== currentUserId)
+      .map((p: any) => p.userId);
+
+    if (otherParticipants.length > 0) {
+      socket.emit('getOnlineStatus', { userIds: otherParticipants });
+      
+      // Listen for response
+      const handleOnlineStatuses = (data: { data: Array<{ id: number; isOnline: boolean; lastSeen: Date }> }) => {
+        if (data.data) {
+          data.data.forEach(user => {
+            if (user) {
+              setUserStatuses(prev => {
+                const updated = new Map(prev);
+                updated.set(user.id, {
+                  userId: user.id,
+                  isOnline: user.isOnline,
+                  lastSeen: new Date(user.lastSeen),
+                });
+                return updated;
+              });
+            }
+          });
+        }
+      };
+
+      socket.on('onlineStatuses', handleOnlineStatuses);
+
+      return () => {
+        socket.off('onlineStatuses', handleOnlineStatuses);
+      };
+    }
+  }, [socket, conversationId, conversations]);
+
   // Heartbeat to update activity
   useEffect(() => {
     if (!socket || !isConnected) return;
