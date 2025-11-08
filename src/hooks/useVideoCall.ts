@@ -39,6 +39,7 @@ export const useVideoCall = (conversationId?: number) => {
           conversationId,
           roomName: call.roomName,
           userId: parseInt(localStorage.getItem('userId') || '0'),
+          callId: call.id,
         });
       }
 
@@ -55,11 +56,20 @@ export const useVideoCall = (conversationId?: number) => {
   const endCall = useCallback(async (callId: number) => {
     try {
       await api.patch(`/video-calls/${callId}/end`);
+      
+      // Notify other participants via Socket.io
+      if (socket && conversationId) {
+        socket.emit('endVideoCall', {
+          conversationId,
+          userId: parseInt(localStorage.getItem('userId') || '0'),
+        });
+      }
+      
       setCurrentCall(null);
     } catch (error) {
       console.error('Error ending call:', error);
     }
-  }, []);
+  }, [socket, conversationId]);
 
   // Get ongoing call
   const getOngoingCall = useCallback(async () => {
@@ -103,26 +113,60 @@ export const useVideoCall = (conversationId?: number) => {
   }, [socket]);
 
   // Accept incoming call
-  const acceptCall = useCallback(() => {
+  const acceptCall = useCallback(async () => {
     if (!incomingCall) return;
     
-    setCurrentCall({
-      id: 0,
-      conversationId: conversationId || 0,
-      roomName: incomingCall.roomName,
-      startedBy: incomingCall.callerId,
-      startedAt: new Date().toISOString(),
-      status: 'ONGOING',
-      jitsiUrl: `https://meet.jit.si/${incomingCall.roomName}`,
-    });
-    
-    setIncomingCall(null);
-  }, [incomingCall, conversationId]);
+    try {
+      // Call backend to accept and create system message
+      const response = await api.post('/video-calls/accept', {
+        roomName: incomingCall.roomName,
+      });
+      
+      setCurrentCall({
+        ...response.data,
+        jitsiUrl: `https://meet.jit.si/${incomingCall.roomName}`,
+      });
+      
+      // Notify other participants via Socket.io
+      if (socket && conversationId) {
+        socket.emit('acceptVideoCall', {
+          conversationId,
+          roomName: incomingCall.roomName,
+          userId: parseInt(localStorage.getItem('userId') || '0'),
+        });
+      }
+      
+      setIncomingCall(null);
+    } catch (error) {
+      console.error('Error accepting call:', error);
+    }
+  }, [incomingCall, conversationId, socket]);
 
   // Reject incoming call
-  const rejectCall = useCallback(() => {
-    setIncomingCall(null);
-  }, []);
+  const rejectCall = useCallback(async () => {
+    if (!incomingCall) return;
+    
+    try {
+      // Mark call as missed in backend
+      if (incomingCall.callerId) {
+        await api.patch(`/video-calls/${incomingCall.callerId}/missed`);
+      }
+      
+      // Notify other participants via Socket.io
+      if (socket && conversationId) {
+        socket.emit('rejectVideoCall', {
+          conversationId,
+          callId: incomingCall.callerId,
+          userId: parseInt(localStorage.getItem('userId') || '0'),
+        });
+      }
+      
+      setIncomingCall(null);
+    } catch (error) {
+      console.error('Error rejecting call:', error);
+      setIncomingCall(null);
+    }
+  }, [incomingCall, socket, conversationId]);
 
   // Fetch ongoing call on mount
   useEffect(() => {

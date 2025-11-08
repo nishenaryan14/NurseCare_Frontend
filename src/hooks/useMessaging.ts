@@ -219,6 +219,13 @@ export const useMessaging = (conversationId?: number) => {
       }
     };
 
+    const handleRefreshMessages = () => {
+      if (conversationId) {
+        console.log('Refreshing messages due to call event');
+        fetchMessages(conversationId);
+      }
+    };
+
     // Global handler for online statuses (from fetchConversations)
     const handleOnlineStatuses = (data: Array<{ id: number; isOnline: boolean; lastSeen: Date }> | any) => {
       console.log('Received online statuses (global):', data);
@@ -246,6 +253,7 @@ export const useMessaging = (conversationId?: number) => {
     socket.on('userStatusChanged', handleStatusChange);
     socket.on('messagesRead', handleMessagesRead);
     socket.on('onlineStatuses', handleOnlineStatuses);
+    socket.on('refreshMessages', handleRefreshMessages);
 
     return () => {
       socket.off('newMessage', handleNewMessage);
@@ -253,8 +261,9 @@ export const useMessaging = (conversationId?: number) => {
       socket.off('userStatusChanged', handleStatusChange);
       socket.off('messagesRead', handleMessagesRead);
       socket.off('onlineStatuses', handleOnlineStatuses);
+      socket.off('refreshMessages', handleRefreshMessages);
     };
-  }, [socket, conversationId, fetchUnreadCount, fetchConversations]);
+  }, [socket, conversationId, fetchUnreadCount, fetchConversations, fetchMessages]);
 
   // Fetch initial data
   useEffect(() => {

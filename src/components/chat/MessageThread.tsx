@@ -260,6 +260,74 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
               messages[index + 1].senderId !== message.senderId ||
               (new Date(messages[index + 1].createdAt).getTime() - new Date(message.createdAt).getTime()) > 300000;
             
+            // Check if this is a system message (video call notification)
+            const isSystemMessage = message.type === 'SYSTEM';
+            
+            // Parse system message content
+            let callIcon = null;
+            let callText = '';
+            let callColor = '';
+            
+            if (isSystemMessage) {
+              if (message.content === 'VIDEO_CALL_STARTED') {
+                callIcon = (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                );
+                callText = isOwnMessage ? 'You started a video call' : `${message.sender.name} started a video call`;
+                callColor = 'text-blue-600';
+              } else if (message.content === 'VIDEO_CALL_JOINED') {
+                callIcon = (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                );
+                callText = isOwnMessage ? 'You joined the call' : `${message.sender.name} joined the call`;
+                callColor = 'text-green-600';
+              } else if (message.content.startsWith('VIDEO_CALL_ENDED:')) {
+                const duration = message.content.split(':')[1];
+                callIcon = (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                  </svg>
+                );
+                callText = `Call ended • ${duration}`;
+                callColor = 'text-gray-600';
+              } else if (message.content === 'VIDEO_CALL_MISSED') {
+                callIcon = (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                  </svg>
+                );
+                callText = isOwnMessage ? 'Missed video call' : 'Missed video call';
+                callColor = 'text-red-600';
+              }
+            }
+            
+            // Render system message (call notification)
+            if (isSystemMessage) {
+              return (
+                <div key={message.id} className="flex justify-center my-2">
+                  <div className="bg-gray-100 rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm">
+                    <div className={callColor}>
+                      {callIcon}
+                    </div>
+                    <p className={`text-sm font-medium ${callColor}`}>
+                      {callText}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(message.createdAt).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            
+            // Render regular message
             return (
               <div
                 key={message.id}
