@@ -4,12 +4,14 @@ import React, { useEffect } from 'react';
 
 interface VideoCallModalProps {
   roomName: string;
+  callId?: number;
   onEndCall: () => void;
   isOpen: boolean;
 }
 
 export const VideoCallModal: React.FC<VideoCallModalProps> = ({
   roomName,
+  callId,
   onEndCall,
   isOpen,
 }) => {

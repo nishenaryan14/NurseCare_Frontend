@@ -23,7 +23,7 @@ function MessagesPageContent() {
       setSelectedConversationId(parseInt(conversationId));
     }
   }, [searchParams]);
-  const { currentCall, incomingCall, startCall, endCall, acceptCall, rejectCall } = useVideoCall(selectedConversationId);
+  const { currentCall, incomingCall, startCall, endCall, acceptCall, rejectCall, hangupCall } = useVideoCall(selectedConversationId);
 
   const handleSelectConversation = (conversationId: number, recipientName?: string, recipientRole?: string, recipientId?: number) => {
     setSelectedConversationId(conversationId);
@@ -43,7 +43,8 @@ function MessagesPageContent() {
 
   const handleEndCall = async () => {
     if (currentCall) {
-      await endCall(currentCall.id);
+      // Use hangupCall to terminate for both users
+      await hangupCall(currentCall.id);
     }
   };
 
@@ -97,6 +98,7 @@ function MessagesPageContent() {
       {currentCall && (
         <VideoCallModal
           roomName={currentCall.roomName}
+          callId={currentCall.id}
           onEndCall={handleEndCall}
           isOpen={!!currentCall}
         />

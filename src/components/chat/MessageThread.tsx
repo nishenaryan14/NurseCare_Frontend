@@ -302,6 +302,14 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 );
                 callText = isOwnMessage ? 'Missed video call' : 'Missed video call';
                 callColor = 'text-red-600';
+              } else if (message.content === 'VIDEO_CALL_REJECTED') {
+                callIcon = (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                );
+                callText = isOwnMessage ? 'You declined the call' : `${message.sender.name} declined the call`;
+                callColor = 'text-red-600';
               }
             }
             

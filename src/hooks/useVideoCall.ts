@@ -19,7 +19,7 @@ interface VideoCall {
 export const useVideoCall = (conversationId?: number) => {
   const { socket } = useSocket();
   const [currentCall, setCurrentCall] = useState<VideoCall | null>(null);
-  const [incomingCall, setIncomingCall] = useState<{ roomName: string; callerId: number } | null>(null);
+  const [incomingCall, setIncomingCall] = useState<{ roomName: string; callerId: number; callId: number } | null>(null);
   const [callHistory, setCallHistory] = useState<VideoCall[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -97,18 +97,34 @@ export const useVideoCall = (conversationId?: number) => {
     }
   }, [conversationId]);
 
-  // Listen for incoming calls
+  // Listen for incoming calls and call events
   useEffect(() => {
     if (!socket) return;
 
-    const handleIncomingCall = (data: { roomName: string; callerId: number }) => {
+    const handleIncomingCall = (data: { roomName: string; callerId: number; callId: number }) => {
       setIncomingCall(data);
     };
 
+    const handleCallRejected = () => {
+      // Call was rejected - close modal for both users
+      setCurrentCall(null);
+      setIncomingCall(null);
+    };
+
+    const handleCallHungUp = () => {
+      // Call was hung up - close modal for both users
+      setCurrentCall(null);
+      setIncomingCall(null);
+    };
+
     socket.on('incomingVideoCall', handleIncomingCall);
+    socket.on('videoCallRejected', handleCallRejected);
+    socket.on('videoCallHungUp', handleCallHungUp);
 
     return () => {
       socket.off('incomingVideoCall', handleIncomingCall);
+      socket.off('videoCallRejected', handleCallRejected);
+      socket.off('videoCallHungUp', handleCallHungUp);
     };
   }, [socket]);
 
@@ -147,16 +163,14 @@ export const useVideoCall = (conversationId?: number) => {
     if (!incomingCall) return;
     
     try {
-      // Mark call as missed in backend
-      if (incomingCall.callerId) {
-        await api.patch(`/video-calls/${incomingCall.callerId}/missed`);
-      }
+      // Reject call in backend
+      await api.patch(`/video-calls/${incomingCall.callId}/reject`);
       
-      // Notify other participants via Socket.io
+      // Notify ALL participants via Socket.io (including caller)
       if (socket && conversationId) {
         socket.emit('rejectVideoCall', {
           conversationId,
-          callId: incomingCall.callerId,
+          callId: incomingCall.callId,
           userId: parseInt(localStorage.getItem('userId') || '0'),
         });
       }
@@ -176,6 +190,28 @@ export const useVideoCall = (conversationId?: number) => {
     }
   }, [conversationId, getOngoingCall, getCallHistory]);
 
+  // Hangup call (terminate for everyone)
+  const hangupCall = useCallback(async (callId: number) => {
+    try {
+      // End call in backend
+      await api.patch(`/video-calls/${callId}/end`);
+      
+      // Notify ALL participants via Socket.io to close their modals
+      if (socket && conversationId) {
+        socket.emit('hangupVideoCall', {
+          conversationId,
+          callId,
+          userId: parseInt(localStorage.getItem('userId') || '0'),
+        });
+      }
+      
+      setCurrentCall(null);
+    } catch (error) {
+      console.error('Error hanging up call:', error);
+      setCurrentCall(null);
+    }
+  }, [socket, conversationId]);
+
   return {
     currentCall,
     incomingCall,
@@ -185,6 +221,7 @@ export const useVideoCall = (conversationId?: number) => {
     endCall,
     acceptCall,
     rejectCall,
+    hangupCall,
     getCallHistory,
   };
 };
