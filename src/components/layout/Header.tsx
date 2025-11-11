@@ -47,8 +47,7 @@ const Header = () => {
     // Navigation for Admin
     if (user && user.role === 'ADMIN') {
       return [
-        { name: 'Home', href: '/' },
-        { name: 'Admin Dashboard', href: '/admin' },
+        { name: 'Dashboard', href: '/admin' },
         { name: 'All Nurses', href: '/nurses' },
         { name: 'Support', href: '/support' },
       ]
@@ -57,7 +56,6 @@ const Header = () => {
     // Navigation for Patients
     if (user && user.role === 'PATIENT') {
       return [
-        { name: 'Home', href: '/' },
         { name: 'Dashboard', href: '/patient/dashboard' },
         { name: 'Find Nurses', href: '/nurses' },
         { name: 'My Bookings', href: '/patient/bookings' },
@@ -69,7 +67,6 @@ const Header = () => {
     // Navigation for Nurses
     if (user && user.role === 'NURSE') {
       return [
-        { name: 'Home', href: '/' },
         { name: 'Dashboard', href: '/nurse/dashboard' },
         { name: 'My Appointments', href: '/nurse/appointments' },
         { name: 'Availability', href: '/nurse/availability' },
@@ -91,15 +88,21 @@ const Header = () => {
 
   const navigation = getNavigation()
 
-  // Remove the automatic redirect logic from Header
-  // The AuthContext and main page handle redirections properly
+  // Get the appropriate home link based on user role
+  const getHomeLink = () => {
+    if (!user) return '/'
+    if (user.role === 'ADMIN') return '/admin'
+    if (user.role === 'NURSE') return '/nurse/dashboard'
+    if (user.role === 'PATIENT') return '/patient/dashboard'
+    return '/'
+  }
 
   return (
     <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex w-full items-center justify-between py-3">
           <div className="flex items-center flex-shrink-0">
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href={getHomeLink()} className="flex items-center space-x-2 group">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
