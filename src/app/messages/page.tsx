@@ -6,6 +6,7 @@ import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { VideoCallModal } from '@/components/video/VideoCallModal';
 import { IncomingCallNotification } from '@/components/video/IncomingCallNotification';
+import { ConversationListSkeleton, MessageThreadSkeleton } from '@/components/chat/LoadingSkeleton';
 import { useVideoCall } from '@/hooks/useVideoCall';
 import { useSocket } from '@/contexts/SocketContext';
 
@@ -58,41 +59,62 @@ function MessagesPageContent() {
       )}
       
       <div className="flex-1 flex overflow-hidden bg-gray-100 p-2 md:p-3 gap-2 md:gap-3 min-h-0">
-        {/* Conversation List - Hidden on mobile when conversation is selected */}
-        <div className={`${
-          selectedConversationId ? 'hidden md:flex' : 'flex'
-        } w-full md:w-80 lg:w-96 flex-shrink-0 rounded-lg shadow-sm overflow-hidden`}>
-          <ConversationList
-            onSelectConversation={handleSelectConversation}
-            selectedConversationId={selectedConversationId}
-          />
-        </div>
-
-      {/* Message Thread */}
-      <div className={`${
-        selectedConversationId ? 'flex' : 'hidden md:flex'
-      } flex-1 overflow-hidden bg-white rounded-lg shadow-sm`}>
-        {selectedConversationId ? (
-          <MessageThread
-            conversationId={selectedConversationId}
-            onStartVideoCall={handleStartVideoCall}
-            recipientName={selectedRecipient?.name}
-            recipientRole={selectedRecipient?.role}
-            recipientId={selectedRecipient?.id}
-            onBack={() => setSelectedConversationId(undefined)}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full bg-gray-50 w-full">
-            <div className="text-center text-gray-500 px-4">
-              <svg className="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              <p className="text-lg font-semibold">Select a conversation</p>
-              <p className="text-sm">Choose a conversation from the list to start messaging</p>
+        {/* Show skeleton UI while not connected */}
+        {!isConnected ? (
+          <>
+            {/* Conversation List Skeleton - Hidden on mobile when conversation is selected */}
+            <div className={`${
+              selectedConversationId ? 'hidden md:flex' : 'flex'
+            } w-full md:w-80 lg:w-96 flex-shrink-0 rounded-lg shadow-sm overflow-hidden`}>
+              <ConversationListSkeleton />
             </div>
-          </div>
+
+            {/* Message Thread Skeleton */}
+            <div className={`${
+              selectedConversationId ? 'flex' : 'hidden md:flex'
+            } flex-1 overflow-hidden bg-white rounded-lg shadow-sm`}>
+              <MessageThreadSkeleton />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Conversation List - Hidden on mobile when conversation is selected */}
+            <div className={`${
+              selectedConversationId ? 'hidden md:flex' : 'flex'
+            } w-full md:w-80 lg:w-96 flex-shrink-0 rounded-lg shadow-sm overflow-hidden`}>
+              <ConversationList
+                onSelectConversation={handleSelectConversation}
+                selectedConversationId={selectedConversationId}
+              />
+            </div>
+
+            {/* Message Thread */}
+            <div className={`${
+              selectedConversationId ? 'flex' : 'hidden md:flex'
+            } flex-1 overflow-hidden bg-white rounded-lg shadow-sm`}>
+              {selectedConversationId ? (
+                <MessageThread
+                  conversationId={selectedConversationId}
+                  onStartVideoCall={handleStartVideoCall}
+                  recipientName={selectedRecipient?.name}
+                  recipientRole={selectedRecipient?.role}
+                  recipientId={selectedRecipient?.id}
+                  onBack={() => setSelectedConversationId(undefined)}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gray-50 w-full">
+                  <div className="text-center text-gray-500 px-4">
+                    <svg className="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <p className="text-lg font-semibold">Select a conversation</p>
+                    <p className="text-sm">Choose a conversation from the list to start messaging</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
-      </div>
 
       {/* Video Call Modal */}
       {currentCall && (
