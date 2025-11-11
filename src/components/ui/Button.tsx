@@ -16,8 +16,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const variants = {
       primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-blue-200',
       secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-      outline: 'border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-blue-500',
-      ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500 shadow-none',
+      outline: 'border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-blue-500 hover:text-gray-800',
+      ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500 shadow-none hover:text-gray-900',
       gradient: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 focus:ring-purple-500 shadow-lg hover:shadow-xl',
       success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-green-200',
       danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-red-200',

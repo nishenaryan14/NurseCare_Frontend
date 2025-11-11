@@ -182,8 +182,15 @@ export const useMessaging = (conversationId?: number) => {
     if (!socket) return;
 
     const handleNewMessage = (message: Message) => {
+      console.log('New message received:', message);
       if (conversationId && message.conversationId === conversationId) {
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => {
+          // Check if message already exists to prevent duplicates
+          if (!prev.some(m => m.id === message.id)) {
+            return [...prev, message];
+          }
+          return prev;
+        });
         // Don't fetch unread count here - let the component handle marking as read
       } else {
         // Only update unread count if message is for a different conversation

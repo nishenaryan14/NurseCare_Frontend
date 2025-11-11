@@ -361,7 +361,15 @@ export default function NurseAppointments() {
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-500">Earnings</span>
-                      <p className="mt-1 text-sm text-gray-900">₹{((selectedBooking.nurse?.nurseProfile?.hourlyRate || 0) * selectedBooking.durationMinutes / 60).toFixed(0)}</p>
+                      <p className="mt-1 text-sm text-gray-900">
+                        ₹{(
+                          (selectedBooking.nurse?.nurseProfile?.hourlyRate || 0) * 
+                          (selectedBooking.durationMinutes / 60)
+                        ).toFixed(0)}
+                        {!selectedBooking.nurse?.nurseProfile?.hourlyRate && (
+                          <span className="text-xs text-yellow-600 ml-2">(Hourly rate not set)</span>
+                        )}
+                      </p>
                     </div>
                   </div>
 
